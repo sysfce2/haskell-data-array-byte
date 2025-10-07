@@ -54,6 +54,7 @@ test-suite data-array-byte-tests
         base,
         data-array-byte,
         quickcheck-classes-base >=0.6 && <0.7,
+        QuickCheck,
         tasty >=1.4 && <1.6,
         tasty-quickcheck >=0.10 && <0.12,
         template-haskell

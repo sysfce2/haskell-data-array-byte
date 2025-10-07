@@ -1,8 +1,12 @@
 -- Derived from @primitive@ package.
 
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use fewer imports" #-}
+{-# HLINT ignore "Redundant compare" #-}
 
 import Control.Monad (when, unless)
 import Data.Array.Byte (ByteArray)
@@ -14,7 +18,10 @@ import GHC.Exts (IsList(..))
 import Language.Haskell.TH.Syntax (lift)
 import Test.QuickCheck.Classes.Base (eqLaws, ordLaws, monoidLaws, showLaws, isListLaws, semigroupLaws, semigroupMonoidLaws, Laws(..))
 import Test.Tasty (defaultMain, testGroup, TestTree)
-import Test.Tasty.QuickCheck (testProperty, Arbitrary(..), (===), Property, NonNegative(..), property)
+import Test.Tasty.QuickCheck (testProperty, (===), Property, NonNegative(..), property)
+#if !MIN_VERSION_QuickCheck(2,17,0) || !MIN_VERSION_base(4,16,0)
+import Test.Tasty.QuickCheck (Arbitrary(..))
+#endif
 
 main :: IO ()
 main = do
@@ -72,20 +79,22 @@ testByteArray = do
     when (show arr6 /= "[0xde, 0xad, 0x00, 0x01, 0xb0]") $
         fail $ "ByteArray Show incorrect: " ++ show arr6
     unless (arr1 > arr3) $
-        fail $ "ByteArray Ord incorrect"
+        fail "ByteArray Ord incorrect"
     unless (arr1 == arr2) $
-        fail $ "ByteArray Eq incorrect"
+        fail "ByteArray Eq incorrect"
     unless (mappend arr1 arr4 == arr5) $
-        fail $ "ByteArray Monoid mappend incorrect"
+        fail "ByteArray Monoid mappend incorrect"
     unless (mappend arr1 (mappend arr3 arr4) == mappend (mappend arr1 arr3) arr4) $
-        fail $ "ByteArray Monoid mappend not associative"
+        fail "ByteArray Monoid mappend not associative"
     unless (mconcat [arr1, arr2, arr3, arr4, arr5] == (arr1 <> arr2 <> arr3 <> arr4 <> arr5)) $
-        fail $ "ByteArray Monoid mconcat incorrect"
+        fail "ByteArray Monoid mconcat incorrect"
     unless (stimes (3 :: Int) arr4 == (arr4 <> arr4 <> arr4)) $
-        fail $ "ByteArray Semigroup stimes incorrect"
+        fail "ByteArray Semigroup stimes incorrect"
 
+#if !MIN_VERSION_QuickCheck(2,17,0) || !MIN_VERSION_base(4,16,0)
 instance Arbitrary ByteArray where
   arbitrary = mkByteArray <$> arbitrary
+#endif
 
 mkByteArray :: [Word8] -> ByteArray
 mkByteArray = fromList
